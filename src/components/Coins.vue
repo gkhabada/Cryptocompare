@@ -1,5 +1,7 @@
 <template>
 <div class="coins">
+  <button type="button" name="button" @click="  sorted('min')">sorting to min</button>
+  <button type="button" name="button" @click="  sorted('max')">sorting to max</button>
   <table>
     <thead>
       <th>№</th>
@@ -39,15 +41,28 @@ export default {
     }
   },
   methods: {
-    // upDate(name) {
-    //   this.polling = setInterval(() => {
-    //     axios
-    //       .get('https://min-api.cryptocompare.com/data/price?tsyms=USD,EUR&fsym=' + name + this.apiKey)
-    //       .then(response => (this.newCrypto = response.data.USD));
-    //     console.log(this.newCrypto)
-    //     return
-    //   }, 10000)
-    // }
+    sorted: function(to) {
+      function compare(a, b) {
+        a = Number(a.DISPLAY.USD.PRICE.replace(/[,\,$\, ]/g, ''))
+        b = Number(b.DISPLAY.USD.PRICE.replace(/[,\,$\, ]/g, ''))
+
+        if (to === 'max') {
+          if (a < b)
+            return -1;
+          if (a > b)
+            return 1;
+          return 0;
+        } else if (to === 'min') {
+          if (a > b)
+            return -1;
+          if (a < b)
+            return 1;
+          return 0;
+        }
+      }
+
+      return this.crypto.sort(compare);
+    },
   }
 }
 </script>
@@ -65,7 +80,8 @@ th {
   padding: 10px 0;
 }
 
-th, td {
+th,
+td {
   border-bottom: 1px solid #ddd;
 }
 
