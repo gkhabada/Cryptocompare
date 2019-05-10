@@ -1,5 +1,7 @@
 <template>
 <div class="coins">
+  <h1>Test work by <a href="http://gkhabada.h1n.ru" target="_blank">Gadzhidadaev Gadzhi</a>. </h1>
+  <hr>
   <button type="button" name="button" @click="sorted('min')">sorting to min</button>
   <button type="button" name="button" @click="sorted('max')">sorting to max</button>
   <table>
@@ -11,12 +13,12 @@
       <th>price</th>
     </thead>
     <tbody>
-      <tr v-for="(coin, index) in newCrypto" :key="index">
+      <tr v-for="(coin, index) in coins" :key="index">
         <td>{{index + 1}}</td>
         <td><img :src="'https://www.cryptocompare.com' + coin.img" :alt="coin.name"></td>
         <td>{{ coin.name }}</td>
-        <td>{{ coin.fullame }}</td>
-        <td>{{ coin.price }}</td>
+        <td>{{ coin.fullname }}</td>
+        <td>{{ (+coin.price).toFixed(3) }}</td>
       </tr>
     </tbody>
   </table>
@@ -25,7 +27,6 @@
 
 <script>
 import axios from "axios";
-
 export default {
   name: 'Coins',
   mounted() {
@@ -38,7 +39,7 @@ export default {
   },
   data() {
     return {
-      newCrypto: '',
+      coins: '',
       crypto: '',
       apiKey: '&api_key={993cdddb26568296d1e11b6283fd7c62e595be4d93693991a4aa6e1ab6c247c6}',
       cryptoStreamUrl: 'https://streamer.cryptocompare.com'
@@ -46,8 +47,7 @@ export default {
   },
   methods: {
     parseApiData: function(coins) {
-
-      let coinsParsed = {}
+      let coinsParsed = []
 
       this.crypto.forEach(coin => {
         coin = {
@@ -56,10 +56,14 @@ export default {
           fullname: coin.CoinInfo.FullName,
           price: coin.DISPLAY.USD.PRICE.replace(/[,\,$\, ]/g, '')
         }
-        coinsParsed[coin.name] = coin
+        coinsParsed.push(coin)
       })
-      this.newCrypto = coinsParsed
-      this.subscribeStream(Object.keys(coinsParsed))
+      this.coins = coinsParsed
+      let coinsNameArray = []
+      this.coins.forEach(function (item) {
+        coinsNameArray.push(item.name)
+      })
+      this.subscribeStream(coinsNameArray)
     },
     subscribeStream: function(names) {
       let cryptoio = io.connect(this.cryptoStreamUrl)
@@ -79,38 +83,29 @@ export default {
     },
     handleMessage: function(message) {
       message = message.split('~')
-
       if ((message[4] === "1") || (message[4] === "2")) {
-
-        let coinName = message[2]
-        this.newCrypto[coinName].price = message[5]
+        this.coins.forEach(function (item) {
+          item.name === message[2] ? item.price = message[5] : item.price
+        })
       }
     },
     sorted: function(to) {
       function compare(a, b) {
-        console.log(111)
         a = Number(a.price.replace(/[,\,$\, ]/g, ''))
         b = Number(b.price.replace(/[,\,$\, ]/g, ''))
 
         if (to === 'max') {
-          if (a < b)
-            return -1;
-          if (a > b)
-            return 1;
+          if (a < b) return -1;
+          if (a > b) return 1;
           return 0;
         } else if (to === 'min') {
-          if (a > b)
-            return -1;
-          if (a < b)
-            return 1;
+          if (a > b) return -1;
+          if (a < b) return 1;
           return 0;
         }
       }
-
-      console.log(this.newCrypto)
-
-      return this.newCrypto.sort(compare);
-    },
+      return this.coins.sort(compare);
+    }
   }
 }
 </script>
