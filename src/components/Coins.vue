@@ -1,9 +1,10 @@
 <template>
 <div class="coins">
   <h1>Test work by <a href="http://gkhabada.h1n.ru" target="_blank">Gadzhidadaev Gadzhi</a>. </h1>
+  <h2>Show the top cryptocurrency and their prices online</h2>
   <hr>
-  <button type="button" name="button" @click="sorted('min')">sorting to min</button>
-  <button type="button" name="button" @click="sorted('max')">sorting to max</button>
+  <button type="button" name="button" @click="sorted('max')" v-if="sortedStatus === 'min'">sorting from min</button>
+  <button type="button" name="button" @click="sorted('min')" v-else>sorting from max</button>
   <table>
     <thead>
       <th>№</th>
@@ -35,6 +36,7 @@ export default {
       .then(response => {
         this.crypto = response.data.Data
         this.parseApiData(this.crypto)
+        this.sorted('min')
       });
   },
   data() {
@@ -42,7 +44,8 @@ export default {
       coins: '',
       crypto: '',
       apiKey: '&api_key={993cdddb26568296d1e11b6283fd7c62e595be4d93693991a4aa6e1ab6c247c6}',
-      cryptoStreamUrl: 'https://streamer.cryptocompare.com'
+      cryptoStreamUrl: 'https://streamer.cryptocompare.com',
+      sortedStatus: 'min'
     }
   },
   methods: {
@@ -50,13 +53,15 @@ export default {
       let coinsParsed = []
 
       this.crypto.forEach(coin => {
-        coin = {
-          img: coin.CoinInfo.ImageUrl,
-          name: coin.CoinInfo.Name,
-          fullname: coin.CoinInfo.FullName,
-          price: coin.DISPLAY.USD.PRICE.replace(/[,\,$\, ]/g, '')
+        if(coin.DISPLAY && coin.CoinInfo) {
+          coin = {
+            img: coin.CoinInfo.ImageUrl,
+            name: coin.CoinInfo.Name,
+            fullname: coin.CoinInfo.FullName,
+            price: (coin.DISPLAY.USD.PRICE || coin.DISPLAY.PRICE || 0).replace(/[,\,$\, ]/g, '')
+          }
+          coinsParsed.push(coin)
         }
-        coinsParsed.push(coin)
       })
       this.coins = coinsParsed
       let coinsNameArray = []
@@ -90,15 +95,17 @@ export default {
       }
     },
     sorted: function(to) {
-      function compare(a, b) {
+      const compare = (a, b) => {
         a = Number(a.price.replace(/[,\,$\, ]/g, ''))
         b = Number(b.price.replace(/[,\,$\, ]/g, ''))
 
         if (to === 'max') {
+          this.sortedStatus = 'max'
           if (a < b) return -1;
           if (a > b) return 1;
           return 0;
         } else if (to === 'min') {
+          this.sortedStatus = 'min'
           if (a > b) return -1;
           if (a < b) return 1;
           return 0;
