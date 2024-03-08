@@ -3,7 +3,6 @@ const path = require('path')
 const utils = require('./utils')
 const webpack = require('webpack')
 const config = require('../config')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
@@ -158,15 +157,6 @@ const webpackConfig = {
       children: true,
       minChunks: 3
     }),
-
-    // copy custom static assets
-    new CopyWebpackPlugin([
-      {
-        from: `./${path.resolve(__dirname, '../static')}`,
-        to: config.build.assetsSubDirectory,
-        ignore: ['.*']
-      }
-    ])
   ],
   node: {
     // prevent webpack from injecting useless setImmediate polyfill because Vue
