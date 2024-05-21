@@ -1,27 +1,33 @@
 <template>
   <div id="app">
-    <TheCoins/>
+    <TheHeader/>
+    <CoinsTable/>
   </div>
 </template>
 
 <script>
-import TheCoins from './components/TheCoins.vue'
+import TheHeader from './components/TheHeader.vue'
+import CoinsTable from './components/CoinsTable.vue'
 
 export default {
   name: 'App',
   components: {
-    TheCoins
+    TheHeader,
+    CoinsTable,
   }
 }
 </script>
 
 <style>
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  width: min(1200px, calc(100% - 32px));
+  margin: 80px auto;
+
+  display: grid;
+  gap: 100px;
+}
+
+body {
+  margin: 0;
 }
 </style>
