@@ -23,11 +23,11 @@ h1 {
   font-weight: 500;
   font-size: 48px;
   line-height: 58px;
-  color: #2A2A2A;
+  color: var(--text-color);
 }
 
 h1 a {
-  color: #DBAB00;
+  color: var(--primary-color);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -44,7 +44,7 @@ h2 {
   font-weight: 400;
   font-size: 30px;
   line-height: 36px;
-  color: #2A2A2A;
+  color: var(--text-color);
 }
 
 @media screen and (max-width: 756px) {

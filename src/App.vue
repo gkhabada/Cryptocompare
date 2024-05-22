@@ -1,8 +1,8 @@
 <template>
-  <div id="app">
+  <main id="app">
     <TheHeader/>
     <CoinsTable/>
-  </div>
+  </main>
 </template>
 
 <script>
@@ -19,6 +19,11 @@ export default {
 </script>
 
 <style>
+:root {
+  --text-color: #2A2A2A;
+  --primary-color: #DBAB00;
+}
+
 #app {
   width: min(1200px, calc(100% - 32px));
   margin: 80px auto;

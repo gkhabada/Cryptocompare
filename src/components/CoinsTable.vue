@@ -9,11 +9,11 @@
             Name
             <button @click="sortCoins('name')">
               <img
-                :src="sortType ==='max' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
+                :src="sortType ==='max' && sortField === 'name' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
                 alt="max"
               >
               <img
-                :src="sortType ==='min' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
+                :src="sortType ==='min' && sortField === 'name' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
                 alt="min"
                 class="rotate180"
               >
@@ -24,11 +24,11 @@
             Price
             <button @click="sortCoins('price')">
               <img
-                :src="sortType ==='max' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
+                :src="sortType ==='max' && sortField === 'price' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
                 alt="max"
               >
               <img
-                :src="sortType ==='min' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
+                :src="sortType ==='min' && sortField === 'price' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
                 alt="min"
                 class="rotate180"
               >
@@ -39,7 +39,9 @@
       <tbody>
         <tr v-for="(coin, index) in sortedCoins" :key="index">
           <td>{{ index + 1 }}</td>
-          <td><img :src="'https://www.cryptocompare.com' + coin.img" :alt="coin.name"></td>
+          <td>
+            <img :src="`https://www.cryptocompare.com${coin.img}`" :alt="coin.name">
+          </td>
           <td>{{ coin.name }}</td>
           <td>{{ coin.fullname }}</td>
           <td>{{ (+coin.price).toFixed(2) }} $</td>
@@ -52,27 +54,14 @@
 <script>
 import io from 'socket.io-client';
 
-const cryptoStreamUrl = 'wss://streamer.cryptocompare.com';
-const apiKey = '&api_key={993cdddb26568296d1e11b6283fd7c62e595be4d93693991a4aa6e1ab6c247c6}';
+const SOCKET_URL = 'wss://streamer.cryptocompare.com';
+const API_KEY = '&api_key={993cdddb26568296d1e11b6283fd7c62e595be4d93693991a4aa6e1ab6c247c6}';
 const sortVariants = ['min', 'max', null];
 
 export default {
   name: 'CoinsTable',
-  created() {
-    fetch(
-      `https://min-api.cryptocompare.com/data/top/mktcapfull?limit=50&tsym=USD&sign=true${apiKey}`,
-      { method: 'GET' }
-    )
-      .then((response) => response.json())
-      .then((response) => {
-        this.crypto = response.Data;
-        this.parseApiData();
-        // this.sortByPrice('min')
-      });
-  },
   data: () => ({
     coins: '',
-    crypto: '',
     sortType: null,
     sortField: null,
   }),
@@ -81,21 +70,18 @@ export default {
       const coins = [...this.coins];
 
       const sortByPriceCallback = (a, b) => {
-        a = Number(a.price.replace(/[,\,$\, ]/g, ''))
-        b = Number(b.price.replace(/[,\,$\, ]/g, ''))
+        const aPrice = Number(a.price.replace(/[,\,$\, ]/g, ''))
+        const bPrice = Number(b.price.replace(/[,\,$\, ]/g, ''))
 
-        if (this.sortType === 'max') return a > b ? 1 : -1;
-        if (this.sortType === 'min') return a < b ? 1 : -1;
+        if (this.sortType === 'max') return aPrice > bPrice ? 1 : -1;
+        if (this.sortType === 'min') return aPrice < bPrice ? 1 : -1;
         return 0;
       };
 
       const sortByNameCallback = (a, b) => {
-        if (this.sortType === 'max') {
-          return a.name.localeCompare(b.name);
-        }
-        if (this.sortType === 'min') {
-          return b.name.localeCompare(a.name);
-        }
+        if (this.sortType === 'max') return a.name.localeCompare(b.name);
+        if (this.sortType === 'min') return b.name.localeCompare(a.name);
+        return 0;
       }
 
       if (this.sortType && this.sortField) {
@@ -106,53 +92,53 @@ export default {
       return coins;
     }
   },
+  created() {
+    fetch(
+      `https://min-api.cryptocompare.com/data/top/mktcapfull?limit=51&tsym=USD&sign=true${API_KEY}`,
+      { method: 'GET' }
+    )
+      .then((response) => {
+        return response.json();
+      })
+      .then((response) => {
+        const coins = response.Data;
+        this.parseApiData(coins);
+      });
+  },
   methods: {
-    parseApiData() {
-      let coinsParsed = []
-
-      this.crypto.forEach((coin) => {
+    parseApiData(coins) {
+      this.coins = coins.reduce((acc, coin) => {
         if (coin.DISPLAY && coin.CoinInfo) {
-          coin = {
+          acc.push({
             img: coin.CoinInfo.ImageUrl,
             name: coin.CoinInfo.Name,
             fullname: coin.CoinInfo.FullName,
             price: (coin.DISPLAY.USD.PRICE || coin.DISPLAY.PRICE || 0).replace(/[,\,$\, ]/g, '')
-          }
-          coinsParsed.push(coin)
+          });
         }
-      })
-      this.coins = coinsParsed
-      let coinsNameArray = []
-      this.coins.forEach(function (item) {
-        coinsNameArray.push(item.name)
-      })
+        return acc;
+      }, []);
+
+      const coinsNameArray = this.coins.map((item) => item.name);
       this.subscribeStream(coinsNameArray);
     },
     subscribeStream(names) {
-      const cryptoio = io(cryptoStreamUrl);
-      const subscriptions = [];
-
-      names.forEach((name) => {
-        subscriptions.push('5~CCCAGG~' + name + '~USD');
-      });
+      const cryptoio = io(SOCKET_URL);
+      const subscriptions = names.map((name) => `5~CCCAGG~${name}~USD`);
 
       cryptoio.emit('SubAdd', {
         'subs': subscriptions,
       });
 
-      cryptoio.on('m', message => {
-        this.handleMessage(message);
+      cryptoio.on('m', (message) => {
+        const splittedMessage = message.split('~');
+        if ((splittedMessage[4] === "1") || (splittedMessage[4] === "2")) {
+          this.coins.forEach((item) => {
+            item.name === splittedMessage[2] ? item.price = splittedMessage[5] : item.price;
+          });
+        }
       });
     },
-    handleMessage(message) {
-      message = message.split('~');
-      if ((message[4] === "1") || (message[4] === "2")) {
-        this.coins.forEach(function (item) {
-          item.name === message[2] ? item.price = message[5] : item.price;
-        });
-      }
-    },
-
     sortCoins(field) {
       if (this.sortField === field) {
         const nextSortTypeIndex = (sortVariants.indexOf(this.sortType) + 1) % 3;
@@ -190,7 +176,7 @@ thead th {
   font-weight: 700;
   font-size: 20px;
   line-height: 24px;
-  color: #DBAB00;
+  color: var(--primary-color);
 }
 
 thead th button {
@@ -228,7 +214,7 @@ tbody td {
   font-weight: 400;
   font-size: 18px;
   line-height: 22px;
-  color: #2A2A2A;
+  color: var(--text-color);
 }
 
 tbody td:first-child {
