@@ -9,11 +9,11 @@
             Name
             <button @click="sortCoins('name')">
               <img
-                :src="sortType ==='max' && sortField === 'name' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
+                :src="sortType ==='max' && sortField === 'name' ? './arrow-gold.svg' : './arrow-black.svg'"
                 alt="max"
               >
               <img
-                :src="sortType ==='min' && sortField === 'name' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
+                :src="sortType ==='min' && sortField === 'name' ? './arrow-gold.svg' : './arrow-black.svg'"
                 alt="min"
                 class="rotate180"
               >
@@ -24,11 +24,11 @@
             Price
             <button @click="sortCoins('price')">
               <img
-                :src="sortType ==='max' && sortField === 'price' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
+                :src="sortType ==='max' && sortField === 'price' ? './arrow-gold.svg' : './arrow-black.svg'"
                 alt="max"
               >
               <img
-                :src="sortType ==='min' && sortField === 'price' ? '/public/arrow-gold.svg' : '/public/arrow-black.svg'"
+                :src="sortType ==='min' && sortField === 'price' ? './arrow-gold.svg' : './arrow-black.svg'"
                 alt="min"
                 class="rotate180"
               >
