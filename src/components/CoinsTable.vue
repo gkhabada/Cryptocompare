@@ -224,6 +224,7 @@ tbody td:first-child {
 tbody td:last-child {
   border-radius:  0 10px 10px 0;
   white-space: nowrap;
+  width: 220px;
 }
 
 tbody td img {
@@ -262,6 +263,10 @@ tbody td img {
   tbody td img {
     width: 32px;
     height: 32px;
+  }
+
+  tbody td:last-child {
+    width: 120px;
   }
 }
 </style>
